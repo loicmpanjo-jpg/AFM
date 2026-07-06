@@ -2,12 +2,14 @@
 
 import asyncio
 import json
+import structlog
 
 import redis.asyncio as redis
 
 from config.config import get_settings
 
 settings = get_settings()
+logger = structlog.get_logger()
 
 
 class EventConsumer:
@@ -54,12 +56,18 @@ class EventConsumer:
                             await handler(data)
                             await redis_client.xack(stream, self.group_name, msg_id)
                         except Exception as e:
-                            print(f"Error processing message {msg_id}: {e}")
+                            logger.error(
+                                "Failed to process message",
+                                msg_id=msg_id,
+                                stream=stream,
+                                error=str(e),
+                            )
 
             except asyncio.CancelledError:
+                logger.info("Consumer cancelled", stream=stream)
                 break
             except Exception as e:
-                print(f"Consumer error: {e}")
+                logger.error("Consumer error", stream=stream, error=str(e))
                 await asyncio.sleep(1)
 
     async def close(self):
