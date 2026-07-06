@@ -46,3 +46,4 @@ pytest-asyncio==0.23.7
 pytest-cov==5.0.0
 factory-boy==3.3.0
 faker==26.0.0
+gunicorn==22.0.0
