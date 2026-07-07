@@ -1,41 +1,37 @@
 services:
-  # 1. API Gateway
+  # Service unique combinant API + Worker (Plan Gratuit)
   - type: web
-    name: afm-api-gateway
+    name: afm-all-in-one
     runtime: python
-    plan: starter
+    plan: free
     region: frankfurt
-    buildCommand: pip install -r requirements.txt && alembic upgrade head
-    startCommand: gunicorn api_gateway.main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./start_all.sh
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: afm-postgres
+          name: afm-db-free
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
-          name: afm-redis
+          type: keyvalue
+          name: afm-redis-free
           property: connectionString
-
-  # 2. Frontend (Serveur statique via Python pour éviter les erreurs de type Render)
-  - type: web
-    name: afm-frontend
-    runtime: python
-    plan: starter
-    region: frankfurt
-    buildCommand: "echo 'No build needed'"
-    startCommand: "python3 -m http.server $PORT --directory frontend"
-    envVars:
-      - key: API_BASE_URL
-        value: "https://afm-api-gateway.onrender.com"
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
 
 databases:
-  - name: afm-postgres
-    plan: starter
+  - name: afm-db-free
+    plan: free
     region: frankfurt
 
-redis:
-  - name: afm-redis
-    plan: starter
+# Render Key-Value (Redis compatible) avec offre gratuite
+keyvalues:
+  - name: afm-redis-free
+    plan: free
     region: frankfurt
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
