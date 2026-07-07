@@ -37,8 +37,8 @@ opentelemetry-instrumentation-fastapi==0.46b0
 # Utilities
 python-dotenv==1.0.1
 tenacity==8.4.2
-orjson==3.10.6
-pendulum==3.0.0
+orjson
+pendulum
 
 # Testing
 pytest==8.2.2
