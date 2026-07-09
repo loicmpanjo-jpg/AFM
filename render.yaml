@@ -138,13 +138,13 @@ services:
         value: "2"
 
   # ── Background worker (event_bus/worker.py — consumes afm:events) ───
-  - type: web
+  - type: worker
     name: afm-worker
     runtime: python
     plan: free
     region: frankfurt
     branch: main
-    buildCommand: "pip install -r requirements.txt && alembic upgrade head"
+    buildCommand: "pip install -r requirements.txt"
     startCommand: "python -m event_bus.worker"
     envVars:
       - fromGroup: afm-shared
