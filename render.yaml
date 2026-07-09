@@ -126,11 +126,11 @@ services:
     region: frankfurt
     branch: main
     healthCheckPath: /health
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install -r requirements.txt && alembic upgrade head"
     # preDeployCommand requires a paid instance type (this blueprint uses
     # `starter`, which qualifies). On the free tier, migrations would need
     # to move into buildCommand instead: append " && alembic upgrade head".
-    preDeployCommand: "alembic upgrade head"
+    # preDeployCommand: "alembic upgrade head"
     startCommand: "uvicorn api_gateway.main:app --host 0.0.0.0 --port $PORT --workers ${WEB_CONCURRENCY:-2} --proxy-headers --forwarded-allow-ips='*'"
     envVars:
       - fromGroup: afm-shared
@@ -138,13 +138,13 @@ services:
         value: "2"
 
   # ── Background worker (event_bus/worker.py — consumes afm:events) ───
-  - type: worker
+  - type: web
     name: afm-worker
     runtime: python
     plan: free
     region: frankfurt
     branch: main
-    buildCommand: "pip install -r requirements.txt"
+    buildCommand: "pip install -r requirements.txt && alembic upgrade head"
     startCommand: "python -m event_bus.worker"
     envVars:
       - fromGroup: afm-shared
