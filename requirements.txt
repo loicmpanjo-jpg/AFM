@@ -1,41 +1,24 @@
-# AFM Core
-fastapi==0.111.0
-uvicorn[standard]==0.30.0
-python-multipart==0.0.9
-
-# Database
-sqlalchemy[asyncio]==2.0.31
-asyncpg==0.29.0
-alembic==1.13.2
-
-# Validation
-pydantic==2.8.2
-pydantic-settings==2.3.4
-email-validator==2.2.0
-
-# Security
-pyjwt==2.8.0
-bcrypt==4.1.3
-passlib==1.7.4
-cryptography==42.0.8
-
-# Redis
-redis==5.0.7
-hiredis==2.3.1
-
-# HTTP Client (REAL PSP calls)
-httpx==0.27.0
-aiohttp==3.9.5
-
-# Alpaca Trading
-alpaca-py==0.28.0
-
-# Observability
-structlog==24.2.0
-python-json-logger==2.0.7
-prometheus-client==0.20.0
-
-# Utilities
-python-dotenv==1.0.1
-tenacity==8.4.2
-orjson==3.10.6
+fastapi
+uvicorn[standard]
+python-multipart
+sqlalchemy[asyncio]
+asyncpg
+alembic
+pydantic
+pydantic-settings
+email-validator
+pyjwt
+bcrypt
+passlib
+cryptography
+redis
+hiredis
+httpx
+aiohttp
+alpaca-py
+structlog
+python-json-logger
+prometheus-client
+python-dotenv
+tenacity
+orjson
