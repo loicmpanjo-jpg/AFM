@@ -104,7 +104,7 @@ databases:
   - name: afm-db
     databaseName: afm
     user: afm_user
-    plan: starter
+    plan: free
     region: frankfurt
     postgresMajorVersion: "16"
     ipAllowList: []   # only reachable from your Render services' private network
@@ -113,7 +113,7 @@ services:
   # ── Redis / Key Value (event streams + idempotency support) ─────────
   - type: redis
     name: afm-redis
-    plan: starter
+    plan: free
     region: frankfurt
     ipAllowList: []
     maxmemoryPolicy: noeviction   # Streams data shouldn't be evicted under memory pressure
@@ -122,7 +122,7 @@ services:
   - type: web
     name: afm-api
     runtime: python
-    plan: starter
+    plan: free
     region: frankfurt
     branch: main
     healthCheckPath: /health
@@ -141,7 +141,7 @@ services:
   - type: worker
     name: afm-worker
     runtime: python
-    plan: starter
+    plan: free
     region: frankfurt
     branch: main
     buildCommand: "pip install -r requirements.txt"
