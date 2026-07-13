@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # API Framework
 fastapi==0.111.0
 uvicorn[standard]==0.30.0
@@ -47,3 +48,29 @@ pytest-cov==5.0.0
 factory-boy==3.3.0
 faker==26.0.0
 gunicorn==22.0.0
+=======
+fastapi
+uvicorn[standard]
+python-multipart
+sqlalchemy[asyncio]
+asyncpg
+alembic
+pydantic
+pydantic-settings
+email-validator
+pyjwt
+bcrypt
+passlib
+cryptography
+redis
+hiredis
+httpx
+aiohttp
+alpaca-py
+structlog
+python-json-logger
+prometheus-client
+python-dotenv
+tenacity
+orjson
+>>>>>>> origin_afm/main

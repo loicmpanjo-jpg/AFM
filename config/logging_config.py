@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 """Structured JSON logging for production observability."""
+=======
+"""
+AFM Structured JSON Logging
+"""
+>>>>>>> origin_afm/main
 
 import logging
 import sys

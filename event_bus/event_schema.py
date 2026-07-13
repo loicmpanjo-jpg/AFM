@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 """Typed event schema with Pydantic v2 validation."""
+=======
+"""
+AFM Event Schema — Pydantic v2 validation
+"""
+>>>>>>> origin_afm/main
 
 from datetime import datetime, timezone
 from enum import Enum
@@ -13,16 +19,25 @@ class EventType(str, Enum):
     PAYMENT_FAILED = "payment.failed"
     TRADE_EXECUTED = "trade.executed"
     TRADE_FAILED = "trade.failed"
+<<<<<<< HEAD
     COPY_TRADE_STARTED = "copy_trade.started"
     COPY_TRADE_STOPPED = "copy_trade.stopped"
     USER_ONBOARDED = "user.onboarded"
     WALLET_UPDATED = "wallet.updated"
+=======
+    SETTLEMENT_BATCH_CREATED = "settlement.batch_created"
+    SETTLEMENT_BATCH_COMPLETED = "settlement.batch_completed"
+>>>>>>> origin_afm/main
 
 
 class EventMetadata(BaseModel):
     event_id: str = Field(default_factory=lambda: f"evt_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S%f')}")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+<<<<<<< HEAD
     source: str = "africa-frontier-markets"
+=======
+    source: str = "afm"
+>>>>>>> origin_afm/main
     version: str = "1.0"
 
 

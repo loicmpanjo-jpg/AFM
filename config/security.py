@@ -1,11 +1,26 @@
+<<<<<<< HEAD
 """Production security: JWT with short expiration, bcrypt, HMAC verification."""
+=======
+"""
+AFM Security — JWT, bcrypt, HMAC, API keys
+"""
+>>>>>>> origin_afm/main
 
 import hashlib
 import hmac
 import secrets
+<<<<<<< HEAD
 from datetime import datetime, timedelta, timezone
 
 import jwt
+=======
+import uuid
+from datetime import datetime, timedelta, timezone
+
+import jwt
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+>>>>>>> origin_afm/main
 from passlib.context import CryptContext
 
 from config.config import get_settings
@@ -65,13 +80,53 @@ def generate_api_secret() -> str:
 
 
 def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
+<<<<<<< HEAD
     expected = hmac.new(
         secret.encode(),
         payload,
         hashlib.sha256,
     ).hexdigest()
+=======
+    expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+>>>>>>> origin_afm/main
     return hmac.compare_digest(expected, signature)
 
 
 def hash_idempotency_key(key: str) -> str:
     return hashlib.sha256(key.encode()).hexdigest()
+<<<<<<< HEAD
+=======
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# 🔴 FIX: real authentication dependency.
+# api_gateway/main.py used to hardcode `user_id = "user_demo_001"`, which is
+# not a valid UUID and does not correspond to any row in `users`, so every
+# payment call failed against a real Postgres DB (invalid UUID / FK
+# violation) and, worse, was not actually protected by auth at all.
+# This dependency decodes the bearer JWT and returns the authenticated
+# user's UUID, raising AuthenticationError if missing/invalid.
+# ─────────────────────────────────────────────────────────────────────────
+_bearer_scheme = HTTPBearer(auto_error=False)
+
+
+async def get_current_user_id(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+) -> uuid.UUID:
+    if credentials is None:
+        raise AuthenticationError("Missing bearer token")
+
+    payload = decode_token(credentials.credentials)
+
+    if payload.get("type") != "access":
+        raise AuthenticationError("Invalid token type")
+
+    sub = payload.get("sub")
+    if not sub:
+        raise AuthenticationError("Token missing subject claim")
+
+    try:
+        return uuid.UUID(str(sub))
+    except ValueError:
+        raise AuthenticationError("Token subject is not a valid user id")
+>>>>>>> origin_afm/main

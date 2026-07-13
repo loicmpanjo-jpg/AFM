@@ -1,14 +1,24 @@
+<<<<<<< HEAD
 """Async Redis consumer with consumer groups."""
 
 import asyncio
 import json
 import structlog
+=======
+"""
+AFM Event Consumer — Redis Streams with consumer groups
+"""
+
+import asyncio
+import json
+>>>>>>> origin_afm/main
 
 import redis.asyncio as redis
 
 from config.config import get_settings
 
 settings = get_settings()
+<<<<<<< HEAD
 logger = structlog.get_logger()
 
 
@@ -17,6 +27,20 @@ class EventConsumer:
         self.group_name = group_name
         self.consumer_name = consumer_name or "consumer_default"
         self._redis = None
+=======
+
+
+class EventConsumer:
+    """
+    Consumes events from Redis Streams using consumer groups.
+    Compatible with producer that uses XADD.
+    """
+
+    def __init__(self, group_name: str = "afm_consumers", consumer_name: str | None = None):
+        self.group_name = group_name
+        self.consumer_name = consumer_name or f"consumer_{asyncio.current_task().get_name() if asyncio.current_task() else 'default'}"
+        self._redis: redis.Redis | None = None
+>>>>>>> origin_afm/main
 
     async def _get_redis(self) -> redis.Redis:
         if self._redis is None:
@@ -35,7 +59,17 @@ class EventConsumer:
             if "already exists" not in str(e):
                 raise
 
+<<<<<<< HEAD
     async def consume(self, stream: str, handler: callable, block_ms: int = 5000, count: int = 10):
+=======
+    async def consume(
+        self,
+        stream: str,
+        handler: callable,
+        block_ms: int = 5000,
+        count: int = 10,
+    ):
+>>>>>>> origin_afm/main
         redis_client = await self._get_redis()
         await self.create_group(stream)
 
@@ -56,6 +90,7 @@ class EventConsumer:
                             await handler(data)
                             await redis_client.xack(stream, self.group_name, msg_id)
                         except Exception as e:
+<<<<<<< HEAD
                             logger.error(
                                 "Failed to process message",
                                 msg_id=msg_id,
@@ -68,6 +103,16 @@ class EventConsumer:
                 break
             except Exception as e:
                 logger.error("Consumer error", stream=stream, error=str(e))
+=======
+                            logger = __import__("structlog").get_logger()
+                            logger.error("Error processing message", msg_id=msg_id, error=str(e))
+
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger = __import__("structlog").get_logger()
+                logger.error("Consumer error", error=str(e))
+>>>>>>> origin_afm/main
                 await asyncio.sleep(1)
 
     async def close(self):
