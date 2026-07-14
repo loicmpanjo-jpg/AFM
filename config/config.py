@@ -1,9 +1,7 @@
-<<<<<<< HEAD
 """Production-hardened configuration with Pydantic v2 validation."""
 
 from functools import lru_cache
 from typing import List, Literal
-=======
 """
 AFM Configuration — Africa Frontier Markets
 Production-hardened settings. No COSY references.
@@ -12,16 +10,12 @@ Production-hardened settings. No COSY references.
 from functools import lru_cache
 from typing import List, Literal
 from decimal import Decimal
->>>>>>> origin_afm/main
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-<<<<<<< HEAD
-=======
 from common.db_url import normalize_database_url
 
->>>>>>> origin_afm/main
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -30,10 +24,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-<<<<<<< HEAD
-=======
     # Security
->>>>>>> origin_afm/main
     secret_key: str = Field(..., min_length=48)
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = Field(default=15, ge=5, le=60)
@@ -46,30 +37,24 @@ class Settings(BaseSettings):
             raise ValueError(f"SECRET_KEY must be >=48 characters, got {len(v)}")
         return v
 
-<<<<<<< HEAD
     database_url: str = Field(..., pattern=r"^postgresql\+asyncpg://")
-=======
     # Database
     # 🟢 RENDER COMPAT: Render (and Heroku-style platforms) inject
     # DATABASE_URL as postgresql://..., not postgresql+asyncpg://. Accept
     # both; normalize_database_url() rewrites the scheme for SQLAlchemy.
     database_url: str = Field(..., pattern=r"^postgres(ql)?(\+asyncpg)?://")
->>>>>>> origin_afm/main
     db_pool_size: int = Field(default=20, ge=5, le=100)
     db_max_overflow: int = Field(default=30, ge=0, le=100)
     db_pool_timeout: int = Field(default=30, ge=5, le=120)
 
-<<<<<<< HEAD
     redis_url: str = Field(..., pattern=r"^redis://")
     redis_pool_size: int = Field(default=50, ge=10, le=200)
 
-=======
     # Redis
     redis_url: str = Field(..., pattern=r"^redis://")
     redis_pool_size: int = Field(default=50, ge=10, le=200)
 
     # Payment Providers
->>>>>>> origin_afm/main
     kora_api_key: str | None = None
     kora_secret_key: str | None = None
     fincra_api_key: str | None = None
@@ -79,11 +64,9 @@ class Settings(BaseSettings):
     stripe_publishable_key: str | None = None
     stripe_secret_key: str | None = None
 
-<<<<<<< HEAD
     kora_webhook_secret: str | None = None
     fincra_webhook_secret: str | None = None
 
-=======
     # Alpaca Trading
     alpaca_api_key: str | None = None
     alpaca_secret_key: str | None = None
@@ -94,12 +77,10 @@ class Settings(BaseSettings):
     fincra_webhook_secret: str | None = None
 
     # Environment
->>>>>>> origin_afm/main
     environment: Literal["development", "staging", "production"] = "development"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     json_logs: bool = True
 
-<<<<<<< HEAD
     allowed_origins: str = "http://localhost:3000"
 
     ads_share: float = Field(default=0.35, ge=0.0, le=1.0)
@@ -109,7 +90,6 @@ class Settings(BaseSettings):
     enable_copy_trading: bool = True
     enable_social_trading: bool = True
     max_copy_allocation_percent: int = Field(default=100, ge=1, le=100)
-=======
     # CORS
     allowed_origins: str = "http://localhost:3000"
 
@@ -125,17 +105,14 @@ class Settings(BaseSettings):
 
     # FX Spread
     fx_spread_bps: int = Field(default=50, ge=0, le=500)
->>>>>>> origin_afm/main
 
     def get_allowed_origins(self) -> List[str]:
         return [o.strip() for o in self.allowed_origins.split(",")]
 
     @property
-<<<<<<< HEAD
     def is_production(self) -> bool:
         return self.environment == "production"
 
-=======
     def resolved_database_url(self) -> str:
         """DATABASE_URL rewritten to the postgresql+asyncpg:// scheme
         SQLAlchemy needs, regardless of which scheme was provided."""
@@ -162,7 +139,6 @@ class Settings(BaseSettings):
     def is_staging(self) -> bool:
         return self.environment == "staging"
 
->>>>>>> origin_afm/main
 
 @lru_cache
 def get_settings() -> Settings:

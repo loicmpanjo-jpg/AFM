@@ -1,25 +1,19 @@
-<<<<<<< HEAD
 """Payment models with strict validation."""
-=======
 """
 AFM Payment Hub Models — SQLAlchemy 2.0 with DB persistence
 """
->>>>>>> origin_afm/main
 
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-<<<<<<< HEAD
 
 from sqlalchemy import Column, String, DateTime, Numeric, Enum as SQLEnum, ForeignKey, JSON, Index
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-=======
 from uuid import uuid4
 
 from sqlalchemy import Column, String, DateTime, Numeric, Enum as SQLEnum, ForeignKey, JSON, Index, Text
 from sqlalchemy.dialects.postgresql import UUID
->>>>>>> origin_afm/main
 
 from config.database import Base
 
@@ -30,10 +24,7 @@ class PaymentStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     REFUNDED = "refunded"
-<<<<<<< HEAD
-=======
     HELD = "held"
->>>>>>> origin_afm/main
 
 
 class PSPType(str, Enum):
@@ -41,17 +32,13 @@ class PSPType(str, Enum):
     FINCRA = "fincra"
     FLUTTERWAVE = "flutterwave"
     STRIPE = "stripe"
-<<<<<<< HEAD
-=======
     MTN_MOMO = "mtn_momo"
     ORANGE_MONEY = "orange_money"
->>>>>>> origin_afm/main
 
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
-<<<<<<< HEAD
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     idempotency_key = Column(String(64), unique=True, nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
@@ -62,7 +49,6 @@ class Transaction(Base):
     status = Column(SQLEnum(PaymentStatus), default=PaymentStatus.PENDING)
     metadata = Column(JSON, default=dict)
     error_message = Column(String(500))
-=======
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     idempotency_key = Column(String(64), unique=True, nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
@@ -79,16 +65,13 @@ class Transaction(Base):
     error_message = Column(Text)
     webhook_received_at = Column(DateTime(timezone=True))
     settled_at = Column(DateTime(timezone=True))
->>>>>>> origin_afm/main
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (
         Index("ix_transactions_user_status", "user_id", "status"),
         Index("ix_transactions_created_at", "created_at"),
-<<<<<<< HEAD
     )
-=======
         Index("ix_transactions_psp_txn", "psp_transaction_id"),
     )
 
@@ -105,4 +88,3 @@ class User(Base):
     is_active = Column(String(1), default="1")
     kyc_status = Column(String(20), default="pending")
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
->>>>>>> origin_afm/main

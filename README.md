@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Africa Frontier Markets — Production Ready
 
 ## Architecture
@@ -44,7 +43,6 @@ kubectl apply -f infra/k8s/hpa.yml
 5. timedelta imported (platform_service.py)
 6. TransactionType enum (main.py)
 7. FX_TO_USD centralized (dashboard_service.py)
-=======
 # Africa Frontier Markets (AFM) — Production Build
 
 ## ⚠️ Scope reality check
@@ -226,4 +224,3 @@ see comments in both files for why this doesn't rely on
 - FX rates in `common/fx.py` are hardcoded/illustrative — wire in a real
   FX rate feed before relying on them for anything beyond fee-bound
   estimates.
->>>>>>> origin_afm/main

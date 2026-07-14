@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """Payment service with Redis-backed idempotency lock. V45+ Production Correction."""
 
 import hashlib
@@ -52,7 +51,6 @@ class PaymentService:
     async def _release_lock(self, lock_id: str) -> None:
         redis_client = await self._get_redis()
         await redis_client.delete(f"payment_lock:{lock_id}")
-=======
 """
 AFM Payment Service — REAL DB persistence + REAL HTTP calls to PSPs
 """
@@ -196,19 +194,16 @@ class PaymentService:
         )
 
         return fee, net
->>>>>>> origin_afm/main
 
     async def process_payment(
         self,
         user_id: str,
         amount: Decimal,
         currency: str,
-<<<<<<< HEAD
         method: str = "card",
         region: str = "west_africa",
         metadata: dict | None = None,
     ) -> Transaction:
-=======
         method: str = "mobile_money",
         region: str = "west_africa",
         phone_number: Optional[str] = None,
@@ -221,12 +216,10 @@ class PaymentService:
 
         # 1. Validate
         currency = currency.upper()
->>>>>>> origin_afm/main
         if currency not in self.SUPPORTED_CURRENCIES:
             raise CurrencyNotSupportedError(f"Currency {currency} not supported")
 
         if amount <= 0:
-<<<<<<< HEAD
             raise PaymentError("Amount must be greater than 0")
 
         timestamp = datetime.now(timezone.utc).isoformat()
@@ -293,7 +286,6 @@ class PaymentService:
     async def close(self):
         if self._redis:
             await self._redis.close()
-=======
             raise ValidationError("Amount must be greater than 0")
 
         if phone_number is None and method == "mobile_money":
@@ -614,7 +606,6 @@ class PaymentService:
     async def close(self):
         if self._http_client:
             await self._http_client.aclose()
->>>>>>> origin_afm/main
 
 
 payment_service = PaymentService()

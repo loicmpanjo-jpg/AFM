@@ -1,10 +1,7 @@
-<<<<<<< HEAD
 """Hierarchical exception classes for the entire platform."""
-=======
 """
 AFM Exception Hierarchy
 """
->>>>>>> origin_afm/main
 
 
 class AFMException(Exception):
@@ -83,7 +80,6 @@ class CurrencyNotSupportedError(AFMException):
     detail = "Currency not supported"
 
 
-<<<<<<< HEAD
 class SelfFollowError(AFMException):
     status_code = 400
     error_code = "SELF_FOLLOW"
@@ -94,7 +90,6 @@ class InvalidAllocationError(AFMException):
     status_code = 400
     error_code = "INVALID_ALLOCATION"
     detail = "Invalid allocation percentage"
-=======
 class FXError(AFMException):
     status_code = 400
     error_code = "FX_ERROR"
@@ -117,7 +112,6 @@ class PSPAPIError(AFMException):
     status_code = 502
     error_code = "PSP_API_ERROR"
     detail = "Payment service provider API error"
->>>>>>> origin_afm/main
 
 
 class APIKeyExpiredError(AFMException):

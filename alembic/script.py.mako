@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """Alembic script template."""
 from alembic import op
 import sqlalchemy as sa
@@ -15,7 +14,6 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     pass
-=======
 """${message}
 
 Revision ID: ${up_revision}
@@ -42,4 +40,3 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     ${downgrades if downgrades else "pass"}
->>>>>>> origin_afm/main

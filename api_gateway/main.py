@@ -1,11 +1,9 @@
-<<<<<<< HEAD
 """Production API Gateway. V45 Correction: TransactionType enum."""
 
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from enum import Enum
-=======
 """
 AFM API Gateway — FastAPI with real payment endpoint
 """
@@ -15,14 +13,12 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
->>>>>>> origin_afm/main
 from typing import AsyncGenerator
 
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
-<<<<<<< HEAD
 
 from config.config import get_settings
 from config.database import init_db, engine
@@ -32,7 +28,6 @@ from config.rate_limit import rate_limiter
 from config.security import decode_token
 from config.telemetry import app_info, http_requests_total, http_request_duration, get_metrics_response, CONTENT_TYPE_LATEST
 from event_bus.redis_producer import event_producer
-=======
 import structlog
 
 from config.config import get_settings
@@ -47,12 +42,10 @@ from event_bus.event_schema import BaseEvent, EventType
 from payment_hub.payment_service import payment_service
 from payment_hub.models import Transaction
 from api_gateway.auth import router as auth_router
->>>>>>> origin_afm/main
 
 logger = configure_logging()
 
 
-<<<<<<< HEAD
 class TransactionType(str, Enum):
     """V45 Correction: Enum for transaction types."""
     DEPOSIT = "deposit"
@@ -80,7 +73,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     await rate_limiter.close()
     await engine.dispose()
     logger.info("Shutdown complete")
-=======
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     settings = get_settings()
@@ -97,16 +89,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     await payment_service.close()
     await event_producer.close()
     await engine.dispose()
->>>>>>> origin_afm/main
 
 
 app = FastAPI(
     title="Africa Frontier Markets API",
-<<<<<<< HEAD
     description="Unified API for EasyMarkets trading and FrontierPay payments",
-=======
     description="B2B Fintech API for African payment corridors and US equity trading",
->>>>>>> origin_afm/main
     version="prod-1.0.0",
     lifespan=lifespan,
     docs_url="/docs" if get_settings().is_development else None,
@@ -115,11 +103,8 @@ app = FastAPI(
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-<<<<<<< HEAD
-=======
 app.include_router(auth_router)
 
->>>>>>> origin_afm/main
 settings = get_settings()
 app.add_middleware(
     CORSMiddleware,
@@ -131,10 +116,7 @@ app.add_middleware(
 )
 
 
-<<<<<<< HEAD
-=======
 # 🟠 FIX 4: Global AFMException handler — returns correct status codes
->>>>>>> origin_afm/main
 @app.exception_handler(AFMException)
 async def afm_exception_handler(request: Request, exc: AFMException):
     return JSONResponse(
@@ -147,7 +129,6 @@ async def afm_exception_handler(request: Request, exc: AFMException):
 async def log_requests(request: Request, call_next):
     start = datetime.now(timezone.utc)
     request_id = request.headers.get("X-Request-ID", "unknown")
-<<<<<<< HEAD
 
     import structlog
     structlog.contextvars.clear_contextvars()
@@ -166,12 +147,10 @@ async def log_requests(request: Request, call_next):
         status=response.status_code,
     ).inc()
 
-=======
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(request_id=request_id, path=request.url.path)
     response = await call_next(request)
     duration = (datetime.now(timezone.utc) - start).total_seconds()
->>>>>>> origin_afm/main
     logger.info(
         "Request completed",
         method=request.method,
@@ -179,10 +158,7 @@ async def log_requests(request: Request, call_next):
         status=response.status_code,
         duration_ms=round(duration * 1000, 2),
     )
-<<<<<<< HEAD
 
-=======
->>>>>>> origin_afm/main
     return response
 
 
@@ -193,7 +169,6 @@ async def health_check():
 
 @app.get("/ready")
 async def readiness_check():
-<<<<<<< HEAD
     checks = {
         "database": await _check_database(),
         "redis": await _check_redis(),
@@ -236,9 +211,7 @@ async def metrics():
         content=get_metrics_response(),
         media_type=CONTENT_TYPE_LATEST,
     )
-=======
     return {"status": "ready"}
->>>>>>> origin_afm/main
 
 
 @app.get("/")
@@ -250,7 +223,6 @@ async def root():
     }
 
 
-<<<<<<< HEAD
 async def get_current_user(request: Request):
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
@@ -279,7 +251,6 @@ async def get_wallet_balance(user=Depends(get_current_user)):
     return {"user_id": user.get("sub"), "balances": {}}
 
 
-=======
 if get_settings().is_development:
     # 🔴 FIX: dev-only helper to obtain a bearer token for local testing,
     # now that /api/v1/payments requires real authentication. Never
@@ -431,16 +402,12 @@ async def get_payment(
 
 
 # Webhook endpoints with HMAC verification
->>>>>>> origin_afm/main
 @app.post("/webhooks/kora")
 async def kora_webhook(request: Request):
     payload = await request.body()
     signature = request.headers.get("X-Kora-Signature", "")
 
-<<<<<<< HEAD
     from payment_hub.payment_service import payment_service
-=======
->>>>>>> origin_afm/main
     if not await payment_service.verify_webhook("kora", payload, signature):
         raise HTTPException(status_code=401, detail="Invalid signature")
 
@@ -454,10 +421,7 @@ async def fincra_webhook(request: Request):
     payload = await request.body()
     signature = request.headers.get("X-Fincra-Signature", "")
 
-<<<<<<< HEAD
     from payment_hub.payment_service import payment_service
-=======
->>>>>>> origin_afm/main
     if not await payment_service.verify_webhook("fincra", payload, signature):
         raise HTTPException(status_code=401, detail="Invalid signature")
 
@@ -466,7 +430,6 @@ async def fincra_webhook(request: Request):
     return {"status": "received"}
 
 
-<<<<<<< HEAD
 @app.post("/platforms")
 async def onboard_platform(request: Request):
     from platform_manager.platform_service import platform_service
@@ -490,12 +453,10 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "main:app",
-=======
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
         "api_gateway.main:app",
->>>>>>> origin_afm/main
         host="0.0.0.0",
         port=8000,
         reload=settings.is_development,

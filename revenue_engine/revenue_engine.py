@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 """Revenue distribution: 35% Ads, 50% Creator, 15% Platform."""
-=======
 """
 AFM Revenue Engine — B2B Transaction Fee Model
 
@@ -10,13 +8,11 @@ NOT COSY. This is pure fintech:
 - Max fee: $50.00
 - No ads, no creator split, no platform split.
 """
->>>>>>> origin_afm/main
 
 from decimal import Decimal, ROUND_HALF_UP
 from dataclasses import dataclass
 
 from config.config import get_settings
-<<<<<<< HEAD
 from config.telemetry import revenue_split
 
 
@@ -65,7 +61,6 @@ class RevenueEngine:
 
 
 revenue_engine = RevenueEngine()
-=======
 from config.logging_config import configure_logging
 from common.fx import convert_usd_bounds
 
@@ -202,4 +197,3 @@ class AFMRevenueEngine:
 
 # Singleton
 revenue_engine = AFMRevenueEngine()
->>>>>>> origin_afm/main

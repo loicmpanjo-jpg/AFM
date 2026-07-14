@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 """Background worker for Render.com — Redis event consumer."""
 
 import asyncio
@@ -53,7 +51,6 @@ async def main() -> None:
         logger.info("Worker shutting down gracefully")
         await consumer.close()
 
-=======
 import asyncio
 import structlog
 from event_bus.redis_consumer import EventConsumer
@@ -76,7 +73,6 @@ async def main():
     except Exception as e:
         logger.error("Worker failed", error=str(e))
 >>>>>>> 70f3cb0 (Add event_bus/worker.py entry point for Render worker)
-=======
 """
 AFM Event Worker — consumes `afm:events` and reacts to payment/trade events.
 
@@ -140,7 +136,6 @@ async def main() -> None:
     finally:
         await consumer.close()
 
->>>>>>> origin_afm/main
 
 if __name__ == "__main__":
     asyncio.run(main())

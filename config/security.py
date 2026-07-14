@@ -1,26 +1,20 @@
-<<<<<<< HEAD
 """Production security: JWT with short expiration, bcrypt, HMAC verification."""
-=======
 """
 AFM Security — JWT, bcrypt, HMAC, API keys
 """
->>>>>>> origin_afm/main
 
 import hashlib
 import hmac
 import secrets
-<<<<<<< HEAD
 from datetime import datetime, timedelta, timezone
 
 import jwt
-=======
 import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
->>>>>>> origin_afm/main
 from passlib.context import CryptContext
 
 from config.config import get_settings
@@ -80,22 +74,17 @@ def generate_api_secret() -> str:
 
 
 def verify_webhook_signature(payload: bytes, signature: str, secret: str) -> bool:
-<<<<<<< HEAD
     expected = hmac.new(
         secret.encode(),
         payload,
         hashlib.sha256,
     ).hexdigest()
-=======
     expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
->>>>>>> origin_afm/main
     return hmac.compare_digest(expected, signature)
 
 
 def hash_idempotency_key(key: str) -> str:
     return hashlib.sha256(key.encode()).hexdigest()
-<<<<<<< HEAD
-=======
 
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -129,4 +118,3 @@ async def get_current_user_id(
         return uuid.UUID(str(sub))
     except ValueError:
         raise AuthenticationError("Token subject is not a valid user id")
->>>>>>> origin_afm/main
