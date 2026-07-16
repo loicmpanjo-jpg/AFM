@@ -1,9 +1,3 @@
-"""Production API Gateway. V45 Correction: TransactionType enum."""
-
-import asyncio
-from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from enum import Enum
 """
 AFM API Gateway — FastAPI with real payment endpoint
 """
@@ -13,6 +7,7 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
+from enum import Enum
 from typing import AsyncGenerator
 
 from fastapi import FastAPI, Request, Depends, HTTPException, status
@@ -22,32 +17,21 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 
 from config.config import get_settings
 from config.database import init_db, engine
-from config.exceptions import AFMException
-from config.logging_config import configure_logging
-from config.rate_limit import rate_limiter
-from config.security import decode_token
-from config.telemetry import app_info, http_requests_total, http_request_duration, get_metrics_response, CONTENT_TYPE_LATEST
-from event_bus.redis_producer import event_producer
-import structlog
-
-from config.config import get_settings
-from config.database import init_db, get_db, engine
 from config.exceptions import (
-    AFMException, ValidationError, PaymentError, ConflictError, NotFoundError,
+    AFMException, ValidationError, NotFoundError,
 )
 from config.logging_config import configure_logging
-from config.security import get_current_user_id, create_access_token
+from config.rate_limit import rate_limiter
+from config.security import decode_token, get_current_user_id, create_access_token
+from config.telemetry import app_info, http_requests_total, http_request_duration, get_metrics_response, CONTENT_TYPE_LATEST
 from event_bus.redis_producer import event_producer
 from event_bus.event_schema import BaseEvent, EventType
 from payment_hub.payment_service import payment_service
-from payment_hub.models import Transaction
 from api_gateway.auth import router as auth_router
 
 logger = configure_logging()
 
-
 class TransactionType(str, Enum):
-    """V45 Correction: Enum for transaction types."""
     DEPOSIT = "deposit"
     WITHDRAWAL = "withdrawal"
     TRANSFER = "transfer"
@@ -57,7 +41,6 @@ class TransactionType(str, Enum):
     FEE = "fee"
     REVENUE_SPLIT = "revenue_split"
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     settings = get_settings()
@@ -65,35 +48,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
         "version": "prod-1.0.0",
         "environment": settings.environment,
     })
-    logger.info("Starting Africa Frontier Markets API", environment=settings.environment)
-    await init_db()
-    yield
-    logger.info("Shutting down gracefully...")
-    await event_producer.close()
-    await rate_limiter.close()
-    await engine.dispose()
-    logger.info("Shutdown complete")
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator:
-    settings = get_settings()
     logger.info("Starting AFM API", environment=settings.environment)
-    if settings.is_development:
-        # 🟢 RENDER/PROD NOTE: create_all() is a dev convenience only. In
-        # staging/production, schema changes are applied via Alembic
-        # (`alembic upgrade head`, wired as the Render preDeployCommand)
-        # so there's a real, reviewable migration history instead of
-        # SQLAlchemy silently reconciling the schema on every boot.
-        await init_db()
+    await init_db()
     yield
     logger.info("Shutting down AFM API")
     await payment_service.close()
     await event_producer.close()
+    await rate_limiter.close()
     await engine.dispose()
-
 
 app = FastAPI(
     title="Africa Frontier Markets API",
-    description="Unified API for EasyMarkets trading and FrontierPay payments",
     description="B2B Fintech API for African payment corridors and US equity trading",
     version="prod-1.0.0",
     lifespan=lifespan,
@@ -102,7 +67,6 @@ app = FastAPI(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-
 app.include_router(auth_router)
 
 settings = get_settings()
@@ -115,15 +79,12 @@ app.add_middleware(
     max_age=600,
 )
 
-
-# 🟠 FIX 4: Global AFMException handler — returns correct status codes
 @app.exception_handler(AFMException)
 async def afm_exception_handler(request: Request, exc: AFMException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"error_code": exc.error_code, "detail": exc.detail},
     )
-
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -147,10 +108,6 @@ async def log_requests(request: Request, call_next):
         status=response.status_code,
     ).inc()
 
-    structlog.contextvars.clear_contextvars()
-    structlog.contextvars.bind_contextvars(request_id=request_id, path=request.url.path)
-    response = await call_next(request)
-    duration = (datetime.now(timezone.utc) - start).total_seconds()
     logger.info(
         "Request completed",
         method=request.method,
@@ -161,11 +118,9 @@ async def log_requests(request: Request, call_next):
 
     return response
 
-
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
-
 
 @app.get("/ready")
 async def readiness_check():
@@ -183,7 +138,6 @@ async def readiness_check():
 
     return {"status": "ready", "checks": checks}
 
-
 async def _check_database() -> bool:
     try:
         from sqlalchemy import text
@@ -192,7 +146,6 @@ async def _check_database() -> bool:
         return True
     except Exception:
         return False
-
 
 async def _check_redis() -> bool:
     try:
@@ -204,15 +157,12 @@ async def _check_redis() -> bool:
     except Exception:
         return False
 
-
 @app.get("/metrics")
 async def metrics():
     return PlainTextResponse(
         content=get_metrics_response(),
         media_type=CONTENT_TYPE_LATEST,
     )
-    return {"status": "ready"}
-
 
 @app.get("/")
 async def root():
@@ -221,7 +171,6 @@ async def root():
         "version": "prod-1.0.0",
         "status": "operational",
     }
-
 
 async def get_current_user(request: Request):
     auth = request.headers.get("Authorization", "")
@@ -235,7 +184,6 @@ async def get_current_user(request: Request):
     except Exception as e:
         raise HTTPException(status_code=401, detail=str(e))
 
-
 async def rate_limit(request: Request):
     client_ip = request.client.host if request.client else "unknown"
     await rate_limiter.is_allowed(
@@ -245,40 +193,28 @@ async def rate_limit(request: Request):
     )
     return True
 
-
 @app.get("/api/v1/wallet/balance", dependencies=[Depends(rate_limit)])
 async def get_wallet_balance(user=Depends(get_current_user)):
     return {"user_id": user.get("sub"), "balances": {}}
 
-
 if get_settings().is_development:
-    # 🔴 FIX: dev-only helper to obtain a bearer token for local testing,
-    # now that /api/v1/payments requires real authentication. Never
-    # mounted outside `environment=development` (see `is_development`).
     @app.post("/dev/token")
     async def issue_dev_token():
         demo_user_id = str(uuid.uuid4())
         token = create_access_token({"sub": demo_user_id})
         return {"access_token": token, "token_type": "bearer", "user_id": demo_user_id}
 
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PAYMENT ENDPOINTS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-from pydantic import BaseModel, Field
-
-
 class PaymentRequest(BaseModel):
-    amount: Decimal = Field(..., gt=0, description="Amount in local currency")
-    currency: str = Field(..., min_length=3, max_length=3, description="XOF, XAF, NGN, KES, GHS, ZAR, USD, EUR, GBP")
-    method: str = Field(default="mobile_money", description="mobile_money, card, bank_transfer, ussd")
-    phone_number: str | None = Field(None, description="Required for mobile_money")
-    region: str = Field(default="west_africa", description="west_africa, east_africa, south_africa, central_africa, international")
+    from pydantic import BaseModel, Field
+    amount: Decimal = Field(..., gt=0)
+    currency: str = Field(..., min_length=3, max_length=3)
+    method: str = Field(default="mobile_money")
+    phone_number: str | None = None
+    region: str = Field(default="west_africa")
     metadata: dict = Field(default_factory=dict)
 
-
 class PaymentResponse(BaseModel):
+    from pydantic import BaseModel
     transaction_id: str
     status: str
     amount: str
@@ -289,44 +225,13 @@ class PaymentResponse(BaseModel):
     psp_transaction_id: str | None
     created_at: str
 
-
-# 🟠 FIX 4: No generic Exception catch — let AFMException propagate to handler
-@app.post("/api/v1/payments", response_model=PaymentResponse, status_code=status.HTTP_201_CREATED)
+@app.post("/api/v1/payments", status_code=status.HTTP_201_CREATED)
 async def create_payment(
     request: Request,
     payment: PaymentRequest,
     user_id: uuid.UUID = Depends(get_current_user_id),
 ):
-    """
-    Create a new payment — initiates REAL PSP processing.
-
-    Flow:
-    1. Authenticate caller (JWT bearer token → user UUID)
-    2. Validate request
-    3. Route to appropriate PSP (Kora, Fincra, Flutterwave, MTN MoMo, Orange Money)
-    4. Process payment via PSP API
-    5. Store transaction in DB
-    6. Return result
-
-    🔴 FIX: previously `user_id` was hardcoded to the string
-    "user_demo_001", which is not a valid UUID and doesn't reference any
-    row in `users`. Every real call crashed against Postgres (invalid UUID
-    / FK violation) and, more importantly, was not actually authenticated.
-    Now the caller must present a valid JWT (see POST /dev/token in
-    development to obtain a test token).
-    """
-    # 🟠 FIX 5: Read X-Idempotency-Key from header if provided
     idempotency_key = request.headers.get("X-Idempotency-Key")
-
-    logger.info(
-        "Payment request received",
-        user_id=str(user_id),
-        amount=str(payment.amount),
-        currency=payment.currency,
-        method=payment.method,
-    )
-
-    # Let AFMException propagate — global handler catches it with correct status code
     transaction = await payment_service.process_payment(
         user_id=user_id,
         amount=payment.amount,
@@ -335,10 +240,9 @@ async def create_payment(
         region=payment.region,
         phone_number=payment.phone_number,
         metadata=payment.metadata,
-        idempotency_key=idempotency_key,  # 🟠 FIX 5: Pass through
+        idempotency_key=idempotency_key,
     )
 
-    # Emit event for async processing
     event = BaseEvent(
         event_type=EventType.PAYMENT_COMPLETED if transaction.status.value == "completed" else EventType.PAYMENT_FAILED,
         payload={
@@ -352,31 +256,23 @@ async def create_payment(
     )
     await event_producer.publish(event)
 
-    return PaymentResponse(
-        transaction_id=str(transaction.id),
-        status=transaction.status.value,
-        amount=str(transaction.amount),
-        currency=transaction.currency,
-        fee_amount=str(transaction.fee_amount),
-        net_amount=str(transaction.net_amount),
-        psp=transaction.psp.value,
-        psp_transaction_id=transaction.psp_transaction_id,
-        created_at=transaction.created_at.isoformat(),
-    )
-
+    return {
+        "transaction_id": str(transaction.id),
+        "status": transaction.status.value,
+        "amount": str(transaction.amount),
+        "currency": transaction.currency,
+        "fee_amount": str(transaction.fee_amount),
+        "net_amount": str(transaction.net_amount),
+        "psp": transaction.psp.value,
+        "psp_transaction_id": transaction.psp_transaction_id,
+        "created_at": transaction.created_at.isoformat(),
+    }
 
 @app.get("/api/v1/payments/{transaction_id}")
 async def get_payment(
     transaction_id: str,
     user_id: uuid.UUID = Depends(get_current_user_id),
 ):
-    """Get payment by ID.
-
-    🔴 FIX: transaction_id is now validated as a UUID before hitting the
-    DB (an invalid value used to bubble up as a raw, unhandled DB error
-    instead of a clean 404/422), and the transaction is scoped to the
-    authenticated caller so users can't read each other's payments.
-    """
     try:
         parsed_id = uuid.UUID(transaction_id)
     except ValueError:
@@ -385,7 +281,6 @@ async def get_payment(
     transaction = await payment_service.get_transaction(parsed_id)
 
     if transaction.user_id != user_id:
-        # Same response as "not found" to avoid leaking existence of other users' txns
         raise NotFoundError(f"Transaction {transaction_id} not found")
 
     return {
@@ -395,40 +290,28 @@ async def get_payment(
         "currency": transaction.currency,
         "psp": transaction.psp.value,
         "psp_transaction_id": transaction.psp_transaction_id,
-        "psp_response": transaction.psp_response,
         "created_at": transaction.created_at.isoformat(),
-        "updated_at": transaction.updated_at.isoformat(),
     }
 
-
-# Webhook endpoints with HMAC verification
 @app.post("/webhooks/kora")
 async def kora_webhook(request: Request):
     payload = await request.body()
     signature = request.headers.get("X-Kora-Signature", "")
-
-    from payment_hub.payment_service import payment_service
     if not await payment_service.verify_webhook("kora", payload, signature):
         raise HTTPException(status_code=401, detail="Invalid signature")
-
     data = await request.json()
     logger.info("Kora webhook received", event=data.get("event"))
     return {"status": "received"}
-
 
 @app.post("/webhooks/fincra")
 async def fincra_webhook(request: Request):
     payload = await request.body()
     signature = request.headers.get("X-Fincra-Signature", "")
-
-    from payment_hub.payment_service import payment_service
     if not await payment_service.verify_webhook("fincra", payload, signature):
         raise HTTPException(status_code=401, detail="Invalid signature")
-
     data = await request.json()
     logger.info("Fincra webhook received", event=data.get("event"))
     return {"status": "received"}
-
 
 @app.post("/platforms")
 async def onboard_platform(request: Request):
@@ -441,18 +324,12 @@ async def onboard_platform(request: Request):
     )
     return result
 
-
 @app.post("/platforms/{platform_id}/rotate-key")
 async def rotate_api_key(platform_id: str, user=Depends(get_current_user)):
     from platform_manager.platform_service import platform_service
     result = await platform_service.rotate_key(platform_id)
     return result
 
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        "main:app",
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
