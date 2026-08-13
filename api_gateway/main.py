@@ -10,6 +10,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import AsyncGenerator
 
+from pydantic import BaseModel, Field
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -205,7 +206,6 @@ if get_settings().is_development:
         return {"access_token": token, "token_type": "bearer", "user_id": demo_user_id}
 
 class PaymentRequest(BaseModel):
-    from pydantic import BaseModel, Field
     amount: Decimal = Field(..., gt=0)
     currency: str = Field(..., min_length=3, max_length=3)
     method: str = Field(default="mobile_money")
@@ -214,7 +214,6 @@ class PaymentRequest(BaseModel):
     metadata: dict = Field(default_factory=dict)
 
 class PaymentResponse(BaseModel):
-    from pydantic import BaseModel
     transaction_id: str
     status: str
     amount: str
