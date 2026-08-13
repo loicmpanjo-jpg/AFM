@@ -14,8 +14,6 @@ from config.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(
-    settings.database_url,
 _connect_args = {"ssl": True} if settings.db_ssl_required else {}
 
 engine = create_async_engine(

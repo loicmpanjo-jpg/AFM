@@ -1,8 +1,3 @@
-"""Async Redis consumer with consumer groups."""
-
-import asyncio
-import json
-import structlog
 """
 AFM Event Consumer — Redis Streams with consumer groups
 """
@@ -11,18 +6,12 @@ import asyncio
 import json
 
 import redis.asyncio as redis
+import structlog
 
 from config.config import get_settings
 
 settings = get_settings()
 logger = structlog.get_logger()
-
-
-class EventConsumer:
-    def __init__(self, group_name: str = "afm_consumers", consumer_name: str | None = None):
-        self.group_name = group_name
-        self.consumer_name = consumer_name or "consumer_default"
-        self._redis = None
 
 
 class EventConsumer:
@@ -53,7 +42,6 @@ class EventConsumer:
             if "already exists" not in str(e):
                 raise
 
-    async def consume(self, stream: str, handler: callable, block_ms: int = 5000, count: int = 10):
     async def consume(
         self,
         stream: str,
@@ -93,14 +81,6 @@ class EventConsumer:
                 break
             except Exception as e:
                 logger.error("Consumer error", stream=stream, error=str(e))
-                            logger = __import__("structlog").get_logger()
-                            logger.error("Error processing message", msg_id=msg_id, error=str(e))
-
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logger = __import__("structlog").get_logger()
-                logger.error("Consumer error", error=str(e))
                 await asyncio.sleep(1)
 
     async def close(self):

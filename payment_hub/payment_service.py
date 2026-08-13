@@ -200,10 +200,6 @@ class PaymentService:
         user_id: str,
         amount: Decimal,
         currency: str,
-        method: str = "card",
-        region: str = "west_africa",
-        metadata: dict | None = None,
-    ) -> Transaction:
         method: str = "mobile_money",
         region: str = "west_africa",
         phone_number: Optional[str] = None,

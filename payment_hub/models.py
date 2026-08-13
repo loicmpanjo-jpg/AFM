@@ -1,4 +1,3 @@
-"""Payment models with strict validation."""
 """
 AFM Payment Hub Models — SQLAlchemy 2.0 with DB persistence
 """
@@ -6,10 +5,6 @@ AFM Payment Hub Models — SQLAlchemy 2.0 with DB persistence
 from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
-
-from sqlalchemy import Column, String, DateTime, Numeric, Enum as SQLEnum, ForeignKey, JSON, Index
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
 from uuid import uuid4
 
 from sqlalchemy import Column, String, DateTime, Numeric, Enum as SQLEnum, ForeignKey, JSON, Index, Text
@@ -39,16 +34,6 @@ class PSPType(str, Enum):
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    idempotency_key = Column(String(64), unique=True, nullable=False, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    psp = Column(SQLEnum(PSPType), nullable=False)
-    psp_transaction_id = Column(String(100))
-    amount = Column(Numeric(19, 8), nullable=False)
-    currency = Column(String(3), nullable=False)
-    status = Column(SQLEnum(PaymentStatus), default=PaymentStatus.PENDING)
-    metadata = Column(JSON, default=dict)
-    error_message = Column(String(500))
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     idempotency_key = Column(String(64), unique=True, nullable=False, index=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
@@ -61,7 +46,7 @@ class Transaction(Base):
     fee_currency = Column(String(3), default="USD")
     net_amount = Column(Numeric(19, 8), default=Decimal("0"))
     status = Column(SQLEnum(PaymentStatus), default=PaymentStatus.PENDING)
-    txn_metadata = Column(JSON, default=dict)  # 🔴 WAS "metadata" — reserved by SQLAlchemy Base.metadata
+    txn_metadata = Column(JSON, default=dict)  # WAS "metadata" — reserved by SQLAlchemy Base.metadata
     error_message = Column(Text)
     webhook_received_at = Column(DateTime(timezone=True))
     settled_at = Column(DateTime(timezone=True))
@@ -71,7 +56,6 @@ class Transaction(Base):
     __table_args__ = (
         Index("ix_transactions_user_status", "user_id", "status"),
         Index("ix_transactions_created_at", "created_at"),
-    )
         Index("ix_transactions_psp_txn", "psp_transaction_id"),
     )
 
