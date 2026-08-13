@@ -17,7 +17,7 @@ settings = get_settings()
 _connect_args = {"ssl": True} if settings.db_ssl_required else {}
 
 engine = create_async_engine(
-    settings.resolved_database_url,
+    settings.resolved_database_url(),
     pool_size=settings.db_pool_size,
     max_overflow=settings.db_max_overflow,
     pool_timeout=settings.db_pool_timeout,
